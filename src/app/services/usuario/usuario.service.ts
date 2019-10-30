@@ -40,10 +40,6 @@ export class UsuarioService {
     this.usuario = usuario; 
     this.token = token;
 
-    console.log('Usuario guardarStorage ', this.usuario)
-
-
-
   }
 
   crearUsuario( usuario: Usuario) {
@@ -130,7 +126,12 @@ export class UsuarioService {
 
       .map( (resp: any) => {
 
-        this.guardarStorage( resp.usuario._id, this.token, resp.usuario);
+        if (usuario._id === this.usuario._id) {
+          /* solo actualizamos el storage de usuario cuando el usuario modificado es el mismo que el conectado */
+          this.guardarStorage( resp.usuario._id, this.token, resp.usuario);
+        }
+
+       
         swal("Usuario actualizado", usuario.nombre, "success");
 
       return true;
@@ -153,5 +154,30 @@ export class UsuarioService {
       });
 
   }
+
+  cargarUsuarios( desde: number = 0 ) {
+
+    let url = URL_SERVICIOS + 'usuario?desde=' + desde;
+    return this.http.get( url );
+
+  }
+
+
+buscarUsuarios( termino: string) {
+
+  let url = URL_SERVICIOS + 'busqueda/coleccion/usuarios/' + termino;
+    return this.http.get( url ).map( (resp: any) => resp.usuarios ); // el map se pone para capturar el resultado y en este caso, 
+    // devolver solo la colección de usuarios, sin el total, para que no haya errores
+  
+}
+
+borrarUsuario( usuario: Usuario) {
+  let url = URL_SERVICIOS + 'usuario/' + usuario._id +'?token=' + this.token;
+    return this.http.delete( url )
+        .map( resp => {
+          swal('Usuario borrado', 'Usuario eliminado correctamente', 'success');
+          return true;
+        });
+}
 
 }

@@ -30,7 +30,7 @@ export class RxjsComponent implements OnInit {
 
   // tslint:disable-next-line:use-life-cycle-interface
   ngOnDestroy() {
-    console.log('Me voy');
+
     this.suscripcion.unsubscribe();
   }
 
