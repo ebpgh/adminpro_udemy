@@ -5,9 +5,11 @@ import { URL_SERVICIOS } from 'src/app/config/config';
 import  'rxjs/add/operator/map'; // se podría haber hecho un import de 'rxjs/Rx' pero esto se considera
 // mala práctiva porque es una librería muy grande, por eso para importar el map se hace un import
 // de 'rxjs/add/operator/map'
+import  'rxjs/add/operator/catch'; // mismo comentario que en el caso del map
 import swal from 'sweetalert';
 import { Router } from '@angular/router';
 import { SubirArchivoService } from '../subir-archivo/subir-archivo.service';
+import { Observable } from 'rxjs/Observable';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +18,7 @@ export class UsuarioService {
 
   usuario: Usuario = null;
   token: string = '';
+  menu: any = [];
 
   constructor(
     public http: HttpClient,  // Necesario para las peticiones hhtp a los servicios
@@ -31,14 +34,16 @@ export class UsuarioService {
     return (this.token.length > 5) ? true : false;
   }
 
-  guardarStorage( id:string, token: string, usuario:Usuario) {
+  guardarStorage( id:string, token: string, usuario:Usuario, menu: any) {
               
     localStorage.setItem('id', id);
     localStorage.setItem('token', token);
     localStorage.setItem('usuario', JSON.stringify(usuario));
+    localStorage.setItem('menu', JSON.stringify(menu));
 
     this.usuario = usuario; 
     this.token = token;
+    this.menu = menu;
 
   }
 
@@ -56,7 +61,16 @@ export class UsuarioService {
               swal('Usuario creado', usuario.email, 'success'); 
               return resp.usuario;
 
-             });
+             }).catch( err => {
+
+              // ver en el backend como se generan los objetos con los errores y como se pone el mensaje
+              // persomnalizado (mensaje)
+
+               swal( err.error.mensaje, err.error.errors.message, 'error');
+               return Observable.throw( err );
+
+
+            });
   }
 
   logout() {
@@ -65,6 +79,7 @@ export class UsuarioService {
     
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
+    localStorage.removeItem('menu');
 
     this.router.navigate(['/login']);
     
@@ -79,7 +94,7 @@ export class UsuarioService {
     //aunque esto es redundante, se podría poner {token} solo
       .map( (resp: any) => {
 
-        this.guardarStorage( resp.id, resp.token, resp.usuario);
+        this.guardarStorage( resp.id, resp.token, resp.usuario, resp.menu);
         return true;
       });
     
@@ -91,8 +106,6 @@ export class UsuarioService {
   loginUsuario( usuario: Usuario, recuerdame: boolean) {
       
     let url = URL_SERVICIOS + 'login'; 
-
-      console.log('URL ', url)
 
       if (recuerdame) {
         localStorage.setItem('email', usuario.email);
@@ -109,9 +122,19 @@ export class UsuarioService {
 
              .map( (resp: any) => {
 
-              this.guardarStorage( resp.id, resp.token, resp.usuario);
+              this.guardarStorage( resp.id, resp.token, resp.usuario, resp.menu);
 
               return true;
+
+             })
+             .catch( err => {
+
+               // ver en el backend como se generan los objetos con los errores y como se pone el mensaje
+               // persomnalizado (mensaje)
+
+                swal( 'Error login', err.error.mensaje, 'error');
+                return Observable.throw( err );
+
 
              });
   }
@@ -128,7 +151,7 @@ export class UsuarioService {
 
         if (usuario._id === this.usuario._id) {
           /* solo actualizamos el storage de usuario cuando el usuario modificado es el mismo que el conectado */
-          this.guardarStorage( resp.usuario._id, this.token, resp.usuario);
+          this.guardarStorage( resp.usuario._id, this.token, resp.usuario, this.menu);
         }
 
        
@@ -146,7 +169,7 @@ export class UsuarioService {
       .then( (resp: any) => {
         this.usuario.img = resp.img;
         swal('Imagen actualizada', this.usuario.nombre, 'success');
-        this.guardarStorage(id, this.token, this.usuario);
+        this.guardarStorage(id, this.token, this.usuario, this.menu);
         
       })
       .catch( resp => { 
