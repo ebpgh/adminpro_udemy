@@ -15,6 +15,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './login/register.component';
+import { PagesComponent } from './pages/pages.component';
+import { SharedModule } from './shared/shared.module';
 
 
 
@@ -24,16 +26,19 @@ import { RegisterComponent } from './login/register.component';
   declarations: [
     AppComponent,
     LoginComponent,
-    RegisterComponent
+    RegisterComponent,
+    PagesComponent // Se pone aquí para que se tenga en cuenta en el app.routes
 
   ],
   imports: [
     BrowserModule,
     APP_ROUTES,
-    PagesModule,
+    // Quitamos de aquí el pagesModule porque se cargará de forma dinámica mediante el lazyload en el app.routes
+    // PagesModule,
     FormsModule,
     ReactiveFormsModule,
-    ServiceModule
+    ServiceModule,
+    SharedModule
 
   ],
   providers: [],

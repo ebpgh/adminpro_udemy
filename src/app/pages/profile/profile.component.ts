@@ -32,7 +32,7 @@ export class ProfileComponent implements OnInit {
 
     this.usuario.nombre = usuario.nombre;
 
-    if (!this.usuario.gooogle) { 
+    if (!this.usuario.google) { 
       this.usuario.email = usuario.email 
     } 
 
